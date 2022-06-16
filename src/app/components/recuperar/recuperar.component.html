@@ -1,0 +1,42 @@
+
+<form (ngSubmit)="consultarLineCaptura()" [formGroup]="profileForm" >
+    <div class="d-flex mb-3 mt-5">
+        <label for="inputPassword" class="col-sm-2 col-form-label">Ingresa tu CURP:</label>
+        <input class="form-control me-1" type="text"  formControlName="curp"  maxlength="18">
+        <button class="btn btn-danger" type="submit"  style="color: aliceblue">Recuperar</button>
+    </div>
+</form>
+
+
+<table class="table table-bordered border-dark table-sm text-center mt-5" *ngIf="condicion">
+ 
+    <thead>
+      <tr>
+        <!-- <th scope="col">Fecha limite de pago</th> -->
+        <th>#</th>
+        <th scope="col">Linea de captura</th>
+        <th scope="col">Nombre</th>
+        <!-- <th scope="col">CURP</th> -->
+        <th scope="col"></th>
+      </tr>
+    </thead>
+  
+    <tbody>
+      <tr *ngFor="let recuperar of recuperar let i=index">
+        <!-- <th>{{recuperar.fechaVigencia}}</th> -->
+        <td>{{i}}</td>
+        <td>{{recuperar.lineaCaptura}}</td>
+        <td>{{recuperar.nombre}}</td>
+        <!-- <td>{{recuperar.CURP}}</td> -->
+        <td>
+          <!-- [disabled]="profileForm.invalid" -->
+            <button class="btn btn-danger" (click)="imprimirPfd(i)"><i class="bi bi-file-earmark-arrow-down"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  
+  </table>
+
+
+
+  <h1>Mi formulario:  {{profileForm.valid}}</h1>

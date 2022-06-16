@@ -1,0 +1,37 @@
+{
+    "name": "calificacionback",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "nodemon src/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/CECyTE-Veracruz/calificacionBack.git"
+    },
+    "author": "CECYTEV-DTE",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/CECyTE-Veracruz/calificacionBack/issues"
+    },
+    "homepage": "https://github.com/CECyTE-Veracruz/calificacionBack#readme",
+    "dependencies": {
+        "@angular/http": "^6.1.0",
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.19.0",
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "easy-soap-request": "^4.7.0",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "latest": "^0.2.0",
+        "pg": "^8.5.1",
+        "pm2": "^5.1.2",
+        "soap": "^0.43.0",
+        "strong-soap": "^3.4.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.15"
+    }
+}

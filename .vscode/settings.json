@@ -1,0 +1,4 @@
+{
+    "git.ignoreLimitWarning": true,
+    "livePreview.defaultPreviewPath": "/src/app/components/recuperar/recuperar.component.html"
+}
