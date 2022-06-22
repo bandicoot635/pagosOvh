@@ -23,19 +23,18 @@ const consultarAlumno = async (req, res) => {
         boolean,
     } = req.body;
 
-    // console.log(boolean);
-    // console.log(termino);
     let queri = "";
 
     if (boolean) {
-        queri = 'SELECT * FROM "alumnos" WHERE "CURP" = $1 ';
+      queri = 'SELECT * FROM "alumnos" WHERE "CURP" = $1 ';
     } else {
-        queri = 'SELECT * FROM "alumnos" WHERE matricula = $1 ';
+      queri = 'SELECT * FROM "alumnos" WHERE matricula = $1 ';
     }
 
     const response = await pool.query(queri, [termino]);
     // console.log(queri, [termino]);
     // console.log(response.rows);
+
     res.json(response.rows[0]); //Solo se debe de devolver un alumno 
 
 };

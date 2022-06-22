@@ -49,7 +49,7 @@ const generarPorPrimeraVez = async (req, res) => {
                 if (!err) {
                     var lineaCaptura = response.result.plineacapturaOut;
                     var monto = response.result.pimporteOut;
-                   
+
 
                     if (lineaCaptura.length != 0) {
 
@@ -80,39 +80,13 @@ const consultarLineCaptura = async (req, res) => {
 
     const queri = 'SELECT * FROM "lineasCaptura" WHERE "CURP" = $1 ';
     const response = await pool.query(queri, [curp]);
-    res.json(response.rows)
-
-    /*
-        let fechaUsuario = new Date(response.rows[0].fechaVigencia)
-        let fechaHoy = new Date()
-    
-        fechaUsuario.setHours(0, 0, 0, 0);
-        fechaHoy.setHours(0, 0, 0, 0);
-        // mes, dia, año
-    
-        if (fechaUsuario.getTime() >= fechaHoy.getTime()) {
-            console.log("La linea de captura aun esta vigente");
-            let dif = (fechaUsuario.getTime() - fechaHoy.getTime())  /(1000*60*60*24) 
-            // console.log(dif);
-            res.json({
-                dias: dif,
-                fecha: true, 
-                respuesta: response.rows
-            });
-        } else {
-            console.log("La linea de captura se vencio");
-            res.json({
-                fecha: false,
-                respuesta: response.rows
-            });
-        }
-        */
+    res.json(response.rows);
 
 }
 
 const validarFecha = async (req, res) => {
 
-    let {
+    const {
         fechaVigencia
     } = req.body;
 
@@ -124,7 +98,7 @@ const validarFecha = async (req, res) => {
     fechaHoy.setHours(0, 0, 0, 0);
 
     if (fechaUsuario.getTime() >= fechaHoy.getTime()) {
-        console.log("La linea de captura aun esta vigente");
+        // console.log("La linea de captura aun esta vigente");
         let dif = (fechaUsuario.getTime() - fechaHoy.getTime()) / (1000 * 60 * 60 * 24)
         // console.log(dif);
         res.json({
@@ -132,7 +106,7 @@ const validarFecha = async (req, res) => {
             fecha: true,//true
         });
     } else {
-        console.log("La linea de captura se vencio");
+        // console.log("La linea de captura se vencio");
         res.json({
             fecha: false,
         });
@@ -144,31 +118,30 @@ const validarFecha = async (req, res) => {
 
 const generarOvhVencido = async (req, res) => {
 
-    let {
-        curp,
-        datos
+    const {
+        CURP,
+        lineaCaptura,
+        nombre,
+        numeroReferencia
     } = req.body;
-    // console.log(datos.nombre);
+    console.log(req.body);
 
-    // const queri = 'SELECT * FROM "lineasCaptura" WHERE "CURP" = $1 ';
-    // const response = await pool.query(queri, [curp]);
 
     //Aqui se consulta la fecha del dia de hoy y se le suman 7 dias que sera la vigencia que tendra la linea de captura
     let fechaHoy = new Date()
     fechaHoy.setDate(fechaHoy.getDate() + 7)
     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-    let fecha = fechaHoy.getDate() + "-" + months[fechaHoy.getMonth()] + "-" + fechaHoy.getFullYear();
-    
+    let fecha = fechaHoy.getDate() + "/" + months[fechaHoy.getMonth()] + "/" + fechaHoy.getFullYear();
 
     var args = {
         pComunidad: 'CECYTEV',
         pUsuario: 'CECYTEV-WS',
         pPassword: 'CECYTEV@PSW$',
-        pReferencias: datos.numero,
+        pReferencias: numeroReferencia,
         pCantidadBase: '1',
         pNoMunicipio: 200,
         pFechaCaducidad: fecha,
-        pNombre: datos.nombre,
+        pNombre: nombre,
         pRfc: '',
         pFolioExterno: '1',
         pObservacion: ''
@@ -190,10 +163,9 @@ const generarOvhVencido = async (req, res) => {
                     var monto = response.result.pimporteOut;
                     // console.log('Respuesta: ', response.result.plineacapturaOut);
 
-
                     if (a.length != 0) {
-                        const queri = 'UPDATE "lineasCaptura" SET "lineaCaptura"=$1, estatus=$2, "fechaVigencia"=$3, monto=$4 WHERE "CURP" = $5';
-                        const response2 = pool.query(queri, [a, "vigente", fecha, monto, curp]);
+                        const queri = 'UPDATE "lineasCaptura" SET "lineaCaptura"=$1, estatus=$2, "fechaVigencia"=$3, monto=$4 WHERE "lineaCaptura" = $5';
+                        const response2 = pool.query(queri, [a, "vigente", fecha, monto, lineaCaptura]);
                     }
 
                     res.json(a); //Se manda como respuesta la linea de captura
@@ -207,11 +179,8 @@ const generarOvhVencido = async (req, res) => {
             console.log('Error al Crear el Cliente: ', err);
         }
     });
-    
+
 }
-
-
-//concepto, monto
 
 module.exports = {
     generarPorPrimeraVez,

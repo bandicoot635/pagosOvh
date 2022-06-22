@@ -35,9 +35,8 @@ export class FormulariosComponent implements OnInit {
   profileForm = new FormGroup({
     termino: new FormControl(''),
     boolean: new FormControl(),
-    matricula: new FormControl(),
+    boolean2: new FormControl(),
   })
-
 
   constructor(private activatedRoute: ActivatedRoute, private fb: FormBuilder, private http: HttpClient, private api: ApiService) {
 
@@ -54,7 +53,7 @@ export class FormulariosComponent implements OnInit {
   }
 
 
-  onSubmit(): any {
+  buscarAlumno(): any {
 
     let valores = {
       termino: this.profileForm.controls['termino'].value,
@@ -67,13 +66,28 @@ export class FormulariosComponent implements OnInit {
     this.http.post(`${this.URL}` + "/alumnos", valores, { headers: this.httpHeaders }).subscribe((resp: any) => {
       this.alumnos = resp;
 
-      if (resp.length != 0) {
-        this.condicion = true
+      if (this.alumnos) {
+        // this.condicion = true
         this.forma.patchValue({ nombre: resp.nombre })
         this.forma.patchValue({ curp: resp.CURP })
 
+        Swal.fire({
+          icon: 'success',
+          title: 'Alumno encontrado',
+          showConfirmButton: false,
+          timer: 1500
+        })
+
       } else {
-        this.condicion = false;
+        // this.condicion = false;
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'No se han encontrado coincidencias!',
+          showConfirmButton: false,
+          timer: 1500
+        })
       }
 
     })
@@ -86,14 +100,14 @@ export class FormulariosComponent implements OnInit {
 
     checkbox.forEach(valor => {
       if (option.target.id != 'boolean') {
-        this.profileForm.patchValue({ curp: false });
+        this.profileForm.patchValue({ boolean: false });
       };
-      if (option.target.id != 'matricula') {
-        this.profileForm.patchValue({ matricula: false });
+      if (option.target.id != 'boolean2') {
+        this.profileForm.patchValue({ boolean2: false });
       };
 
     });
-    console.log( this.profileForm.value)
+    // console.log( this.profileForm.value)
     
   };
 
