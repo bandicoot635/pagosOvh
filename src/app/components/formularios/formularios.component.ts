@@ -137,6 +137,8 @@ export class FormulariosComponent implements OnInit {
 
     this.http.post(`${this.URL}` + "/ovh/generar", this.valoresOrdenPago, { headers: this.httpHeaders }).subscribe((resp: any) => {
       resp;
+      console.log(this.valoresOrdenPago);
+      
       
       if (resp != "") {
         // console.log(resp);

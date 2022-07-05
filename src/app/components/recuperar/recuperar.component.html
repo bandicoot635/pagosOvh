@@ -1,49 +1,46 @@
+<!-- <small *ngIf="condicion2==false"  class="text-danger text-center"> NO SE ENCONTRARON RESULTADOS </small> -->
 
-  <!-- && profileForm.touched -->
+<form class="row g-3 mt-5" (ngSubmit)="consultarLineCaptura()" [formGroup]="profileForm">
+
+  <div class="col-auto ">
+    <label for="staticEmail2" class="form-label">Buscar por CURP:</label>
+  </div>
+
+  <div class="input-group">
+    <input type="text" class="form-control" id="inputPassword2" formControlName="curp" maxlength="18">
+    <button type="submit" class="btn btn-danger input-group-text ms-1">Recuperar</button>
+  </div>
+  <small *ngIf="profileForm.invalid" class="text-danger">Ingresa un CURP valido</small>
+
+</form>
+<div class="table-responsive">
   
-  <!-- <small *ngIf="condicion2==false"  class="text-danger text-center"> NO SE ENCONTRARON RESULTADOS </small> -->
-
-  <form class="row g-3 mt-5" (ngSubmit)="consultarLineCaptura()" [formGroup]="profileForm">
-
-    <div class="col-auto ">
-      <label for="staticEmail2" class="form-label">Buscar por CURP:</label>
-    </div>
-
-    <div class="input-group">
-      <input type="text" class="form-control" id="inputPassword2" formControlName="curp" maxlength="18">
-      <button type="submit" class="btn btn-danger input-group-text ms-1">Recuperar</button>
-    </div>
-    <small *ngIf="profileForm.invalid" class="text-danger">Ingresa un CURP valido</small>
-
-  </form>
-
-
-
 <table class="table table-bordered border-dark table-sm text-center mt-5" *ngIf="condicion">
 
   <thead>
     <tr>
-      <th>#</th>
+      <!-- <th>#</th> -->
       <th scope="col">Linea de captura</th>
       <th scope="col">Nombre</th>
-      <th scope="col"></th>
+      <th scope="col"><i class="bi bi-sort-down-alt"></i></th>
     </tr>
   </thead>
 
   <tbody>
     <tr *ngFor="let recuperar of recuperar let i=index">
 
-      <td>{{i}}</td>
+      <!-- <td>{{i}}</td> -->
       <td>{{recuperar.lineaCaptura}}</td>
       <td>{{recuperar.nombre}}</td>
       <td>
         <!-- [disabled]="profileForm.invalid" -->
-        <button class="btn btn-danger" (click)="imprimirPfd(i)"><i class="bi bi-file-earmark-arrow-down"></i></button>
+        <button (click)="imprimirPfd(i)" style="border: 0px; background-color: white;"><i class="bi bi-download"></i></button>
       </td>
     </tr>
   </tbody>
 
 </table>
+</div>
 
 
 

@@ -1,17 +1,48 @@
-input{
-border: none;
+input {
+    border: none;
     border-radius: 100px;
     padding: 5px 3rem 5px 16px;
     margin-left: 8px;
     width: 180px;
-    /* max-width: 240px; */
     line-height: normal;
     height: 50%;
-    -webkit-appearance: none;
-} 
- /* nav{
-    position: fixed;
-    z-index: 1;
-     top: 0; 
-    right: 0; 
-}  */
+}
+
+  /* CSS para posicionar el bade cerca del icono*/
+  .cart {
+    position: relative;
+  }
+  
+  #cart_menu_num {
+    position: absolute;
+    top: 0;
+    left: 55%;
+    background: red;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 2px;
+  }
+
+  .add{
+    position: relative;
+  }
+
+  #add {
+    position: absolute;
+    top: 0;
+    left: 55%;
+    background: red;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 2px;
+  }

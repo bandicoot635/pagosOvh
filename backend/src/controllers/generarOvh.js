@@ -20,6 +20,8 @@ const generarPorPrimeraVez = async (req, res) => {
         curp
     } = req.body;
 
+    // const [numero1, numero2]=numero
+    // console.log(numero);
 
     var args = {
         pComunidad: 'CECYTEV',
@@ -51,16 +53,17 @@ const generarPorPrimeraVez = async (req, res) => {
                     var monto = response.result.pimporteOut;
 
 
-                    if (lineaCaptura.length != 0) {
+                    // if (lineaCaptura.length != 0) {
 
-                        const queri = 'INSERT INTO "lineasCaptura"( nombre, "CURP", "lineaCaptura", plantel, estatus, "fechaVigencia",  "numeroReferencia", descripcion, monto) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)';
-                        const response = pool.query(queri, [nombre, curp, lineaCaptura, 10, "Vigente", fecha, numero, descripcion, monto]);
-                    }
+                    //     const queri = 'INSERT INTO "lineasCaptura"( nombre, "CURP", "lineaCaptura", plantel, estatus, "fechaVigencia",  "numeroReferencia", descripcion, monto) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)';
+                    //     const response = pool.query(queri, [nombre, curp, lineaCaptura, 10, "Vigente", fecha, numero, descripcion, monto]);
+                    // }
 
                     res.json(lineaCaptura); //Se manda como respuesta la linea de captura
 
                 } else {
                     console.log('Error en el Servicio', err);
+                    console.log(err);
                 }
 
             });
@@ -113,8 +116,6 @@ const validarFecha = async (req, res) => {
     }
 
 }
-
-
 
 const generarOvhVencido = async (req, res) => {
 
