@@ -5,11 +5,11 @@ import { PagosComponent } from './components/pagos/pagos.component';
 import { RecuperarComponent } from './components/recuperar/recuperar.component';
 
 const routes: Routes = [
+ 
   { path: 'pagos', component: PagosComponent},
-  { path: 'formularios/:id_pago/:descripcion', component: FormulariosComponent },
+  { path: 'formularios', component: FormulariosComponent },
   { path: 'recuperar', component: RecuperarComponent},
   { path: '**', pathMatch: 'full', redirectTo: 'pagos'}
- 
 ];
 
 @NgModule({

@@ -1,4 +1,3 @@
-const { response } = require('express');
 const { Pool } = require('pg');
 var soap = require('soap');
 
@@ -10,25 +9,21 @@ const pool = new Pool({
     port: process.env.PORT_BD
 })
 
+
 const generarPorPrimeraVez = async (req, res) => {
 
-    const {
-        numero,
-        fecha,
-        descripcion,
-        nombre,
-        curp
-    } = req.body;
+    const { fecha, numero, nombre, cantidad, curp } = req.body;
 
-    // const [numero1, numero2]=numero
-    // console.log(numero);
+    const query = 'SELECT id_alumno FROM alumnos WHERE "CURP" = $1'
+    const response = await pool.query(query, [curp]);
+    const id_alumno = response.rows[0].id_alumno
 
     var args = {
         pComunidad: 'CECYTEV',
         pUsuario: 'CECYTEV-WS',
         pPassword: 'CECYTEV@PSW$',
         pReferencias: numero,
-        pCantidadBase: '1',
+        pCantidadBase: cantidad,
         pNoMunicipio: 200,
         pFechaCaducidad: fecha,
         pNombre: nombre,
@@ -49,29 +44,31 @@ const generarPorPrimeraVez = async (req, res) => {
             client.wsGeneraAdeudoReferencias(args, function (err, response) {
 
                 if (!err) {
-                    var lineaCaptura = response.result.plineacapturaOut;
-                    var monto = response.result.pimporteOut;
 
+                    try {
 
-                    // if (lineaCaptura.length != 0) {
-
-                    //     const queri = 'INSERT INTO "lineasCaptura"( nombre, "CURP", "lineaCaptura", plantel, estatus, "fechaVigencia",  "numeroReferencia", descripcion, monto) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)';
-                    //     const response = pool.query(queri, [nombre, curp, lineaCaptura, 10, "Vigente", fecha, numero, descripcion, monto]);
-                    // }
-
-                    res.json(lineaCaptura); //Se manda como respuesta la linea de captura
+                        let lineaCaptura = response.result.plineacapturaOut.trim();
+                        let monto = response.result.pimporteOut;
+    
+                        const query = 'INSERT INTO "lineasCaptura"(plantel, estatus, "lineaCaptura", id_pago, monto, "fechaVigencia", id_alumno, cantidad) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)'
+                        const response1 = pool.query(query, [10, "vigente", lineaCaptura, numero, monto, fecha, id_alumno, cantidad]);
+    
+                        res.json(lineaCaptura); //Se manda como respuesta la linea de captura
+                        
+                    } catch (error) {
+                        res.status(500).json({ error: 'Error en la consulta' })
+                    }
+                   
 
                 } else {
-                    console.log('Error en el Servicio', err);
-                    console.log(err);
+                    res.status(500).json({ error: 'Error en el servicio' })
                 }
 
             });
         } else {
-            console.log('Error al Crear el Cliente: ', err);
+            res.status(500).json({ error: 'Error al crear el cliente' })
         }
     });
-
 }
 
 //En este endpoint se consulta la tabla linea de capturas para ver si encuentra una coincidiencia.
@@ -81,17 +78,60 @@ const consultarLineCaptura = async (req, res) => {
         curp
     } = req.body;
 
-    const queri = 'SELECT * FROM "lineasCaptura" WHERE "CURP" = $1 ';
-    const response = await pool.query(queri, [curp]);
-    res.json(response.rows);
+    let expresion = /[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}/
 
+    if (!curp.match(expresion)) {
+
+        res.status(400).json({
+            error: 'El CURP ingresado no es valido'
+        })
+
+    } else {
+
+        try {
+
+            const queri = 'SELECT id_alumno FROM alumnos WHERE "CURP" = $1'
+            const response = await pool.query(queri, [curp]);
+
+            if (!response.rows[0]) {
+                res.status(400).json({
+                    error: 'El alumno no existe en nuestra base de datos'
+                })
+            } else {
+                try {
+                    const query = 'SELECT * FROM "lineasCaptura" WHERE id_alumno = $1'
+                    const response2 = await pool.query(query, [response.rows[0].id_alumno]);
+
+                    if (!response2.rows[0]) {
+                        res.status(400).json({
+                            error: 'No haz generado ningun pago'
+                        })
+                    } else {
+                        res.json(response2.rows); //Si pasa todas las validaciones aqui se envia la data
+                    }
+                } catch (error) {
+                    console.log(error);
+                    res.status(500).json({
+                        error: "Fallo la consulta"
+                    })
+                }
+            }
+
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                error: "Fallo la consulta"
+            })
+        }
+
+
+    }
 }
 
 const validarFecha = async (req, res) => {
 
-    const {
-        fechaVigencia
-    } = req.body;
+    const { fechaVigencia } = req.body;
 
 
     let fechaUsuario = new Date(fechaVigencia)
@@ -101,15 +141,12 @@ const validarFecha = async (req, res) => {
     fechaHoy.setHours(0, 0, 0, 0);
 
     if (fechaUsuario.getTime() >= fechaHoy.getTime()) {
-        // console.log("La linea de captura aun esta vigente");
         let dif = (fechaUsuario.getTime() - fechaHoy.getTime()) / (1000 * 60 * 60 * 24)
-        // console.log(dif);
         res.json({
             dias: dif,
             fecha: true,//true
         });
     } else {
-        // console.log("La linea de captura se vencio");
         res.json({
             fecha: false,
         });
@@ -119,14 +156,11 @@ const validarFecha = async (req, res) => {
 
 const generarOvhVencido = async (req, res) => {
 
-    const {
-        CURP,
-        lineaCaptura,
-        nombre,
-        numeroReferencia
-    } = req.body;
-    console.log(req.body);
+    const { id_pago, cantidad, id_alumno } = req.body;
 
+    const query = 'SELECT nombre FROM alumnos WHERE id_alumno = $1'
+    const response = await pool.query(query, [id_alumno]);
+    const nombreAlumno = response.rows[0].nombre
 
     //Aqui se consulta la fecha del dia de hoy y se le suman 7 dias que sera la vigencia que tendra la linea de captura
     let fechaHoy = new Date()
@@ -138,11 +172,11 @@ const generarOvhVencido = async (req, res) => {
         pComunidad: 'CECYTEV',
         pUsuario: 'CECYTEV-WS',
         pPassword: 'CECYTEV@PSW$',
-        pReferencias: numeroReferencia,
-        pCantidadBase: '1',
+        pReferencias: id_pago,
+        pCantidadBase: cantidad,
         pNoMunicipio: 200,
         pFechaCaducidad: fecha,
-        pNombre: nombre,
+        pNombre: nombreAlumno,
         pRfc: '',
         pFolioExterno: '1',
         pObservacion: ''
@@ -160,24 +194,27 @@ const generarOvhVencido = async (req, res) => {
             client.wsGeneraAdeudoReferencias(args, function (err, response) {
 
                 if (!err) {
-                    var a = response.result.plineacapturaOut;
-                    var monto = response.result.pimporteOut;
-                    // console.log('Respuesta: ', response.result.plineacapturaOut);
 
-                    if (a.length != 0) {
-                        const queri = 'UPDATE "lineasCaptura" SET "lineaCaptura"=$1, estatus=$2, "fechaVigencia"=$3, monto=$4 WHERE "lineaCaptura" = $5';
-                        const response2 = pool.query(queri, [a, "vigente", fecha, monto, lineaCaptura]);
+                    try {
+                        let lineaCaptura = response.result.plineacapturaOut.trim();
+                        let monto = response.result.pimporteOut;
+    
+                        const queri = 'INSERT INTO "lineasCaptura"(plantel, estatus, "lineaCaptura", id_pago, monto, "fechaVigencia", id_alumno, cantidad) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)'
+                        const response1 = pool.query(queri, [10, "vigente", lineaCaptura, id_pago, monto, fecha, id_alumno, cantidad]);
+    
+                        res.json(lineaCaptura); //Se manda como respuesta la linea de captura
+    
+                    } catch (error) {
+                        res.status(500).json({ error: 'Error en la consulta' })
                     }
-
-                    res.json(a); //Se manda como respuesta la linea de captura
-
+                   
                 } else {
-                    console.log('Error en el Servicio', err);
+                    res.status(500).json({ error: 'Error en el servicio' })
                 }
 
             });
         } else {
-            console.log('Error al Crear el Cliente: ', err);
+            res.status(500).json({ error: 'Error al crear el cliente' })
         }
     });
 

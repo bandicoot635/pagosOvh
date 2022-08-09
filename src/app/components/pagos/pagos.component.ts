@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/service/api.service';
-import Swal from 'sweetalert2'
+declare let alertify: any
+
+export interface Pago {
+  numero: number,
+  descripcion: string,
+  cantidad: number
+}
 
 @Component({
   selector: 'app-pagos',
@@ -10,24 +16,24 @@ import Swal from 'sweetalert2'
 
 export class PagosComponent implements OnInit {
 
-  public pagosList: any = [];
+
+  public pagosList: any[] = [];
   public page: number = 0;
   public buscar: string = "";
-  public carrito: any[] = [];
+  public pagos: any = []
+  public pagoV: Pago = {
+    numero: 0,
+    descripcion: "",
+    cantidad: 0
+  }
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   ngOnInit(): void {
     this.api.getPagos().subscribe((resp: any) => {
       this.pagosList = resp;
-      this.pagosList.forEach((e: any) => {
-        e.contador = 0
-      });
-      // console.log(this.pagosList);
-
     })
-
-    if(this.page==0){
+    if (this.page == 0) {
       let butonAtras = document.getElementById("butonAtras") as HTMLInputElement;
       butonAtras.disabled = true;
     }
@@ -38,48 +44,41 @@ export class PagosComponent implements OnInit {
     this.buscar = buscar;
   }
 
-  add(pago:any) {
-    this.carrito.push(pago)
-    console.log(pago, this.carrito)
+  add(pago: any) {
+    this.pagoV = {
+      numero: pago.id_pago,
+      descripcion: pago.descripcion.trim(),
+      cantidad: 1
+    }
 
+    //indice a veces devuelve -1 y por eso devuelve undefined
+    let indice = this.pagos.findIndex((p: any) => p.numero === this.pagoV.numero);
 
-    // if (this.pagosList[i].contador == 3) {
-    //   Swal.fire({
-    //     icon: 'error',
-    //     title: 'Oops...',
-    //     text: 'No puedes pagar mas de 3!',
-    //     showConfirmButton: false,
-    //     timer: 1500
-    //   })
-    // } else {
-    //   this.pagosList[i].contador++
-    //   this.carrito.push(datos)
-    // }
+    if (indice == -1) {
+      this.pagos.push(this.pagoV);
 
-    // console.log(this.carrito);
-  }
-
-  delete(i: number) {
-    if( this.pagosList[i].contador<=0){
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'No hay nada para eliminar!',
-        showConfirmButton: false,
-        timer: 1500
-      })
-    }else{
-      this.pagosList[i].contador--
-      this.carrito.splice(i)
-      console.log(this.carrito, this.pagosList[i].contador );
+      let msg = alertify.message('Default message');
+      msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice + 1].cantidad} )`);
+    } else {
+      this.pagos[indice].cantidad++;
+     
+      let msg = alertify.message('Default message');
+      msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice].cantidad} )`);
     }
   }
+
+  delete(pago: any) {
+    this.pagos = this.pagos.filter((item: any) => item.numero !== pago.id_pago);
+    var msg = alertify.error('Default message');
+    msg.delay(1).setContent('Pago eliminado');
+  }
+
   siguientePagina() {
     let butonAtras = document.getElementById("butonAtras") as HTMLInputElement;
-   
-    if (this.page== 0 ) {
+
+    if (this.page == 0) {
       butonAtras.disabled = true;
-    }else{
+    } else {
       butonAtras.disabled = false;
     }
     this.page += 10;
@@ -89,11 +88,19 @@ export class PagosComponent implements OnInit {
   atrasPagina() {
     this.page -= 10
     console.log(this.page);
-    
+
     let butonAtras = document.getElementById("butonAtras") as HTMLInputElement;
-    if (this.page <= 0 ) {
+    if (this.page <= 0) {
       butonAtras.disabled = true;
     }
+  }
+
+  sendArray(datos: any) {
+    this.api.setArray(datos);
+  }
+
+  enviarData() {
+    this.sendArray(this.pagos);
   }
 
 }

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+declare let alertify:any
 
 @Component({
   selector: 'app-root',

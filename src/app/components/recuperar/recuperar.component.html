@@ -1,6 +1,8 @@
-<!-- <small *ngIf="condicion2==false"  class="text-danger text-center"> NO SE ENCONTRARON RESULTADOS </small> -->
+<a routerLink="/pagos" class="btn btn-danger col-3 mt-2"><i class="bi bi-arrow-left-circle "></i> Atras</a>
+<h1 class="text-center mt-5">Búscar linea de captura</h1>
+<hr>
 
-<form class="row g-3 mt-5" (ngSubmit)="consultarLineCaptura()" [formGroup]="profileForm">
+<form class="row g-3 mt-3" (ngSubmit)="consultarLineCaptura()" [formGroup]="profileForm">
 
   <div class="col-auto ">
     <label for="staticEmail2" class="form-label">Buscar por CURP:</label>
@@ -10,36 +12,40 @@
     <input type="text" class="form-control" id="inputPassword2" formControlName="curp" maxlength="18">
     <button type="submit" class="btn btn-danger input-group-text ms-1">Recuperar</button>
   </div>
-  <small *ngIf="profileForm.invalid" class="text-danger">Ingresa un CURP valido</small>
+ 
+  <small *ngIf="!profileForm.valid" class="text-danger">Ingresa un CURP valido</small>
 
 </form>
+
+
 <div class="table-responsive">
-  
-<table class="table table-bordered border-dark table-sm text-center mt-5" *ngIf="condicion">
 
-  <thead>
-    <tr>
-      <!-- <th>#</th> -->
-      <th scope="col">Linea de captura</th>
-      <th scope="col">Nombre</th>
-      <th scope="col"><i class="bi bi-sort-down-alt"></i></th>
-    </tr>
-  </thead>
+  <table class="table table-bordered border-dark table-sm text-center mt-5" *ngIf="condicion">
 
-  <tbody>
-    <tr *ngFor="let recuperar of recuperar let i=index">
+    <thead>
+      <tr>
+        <!-- <th>#</th> -->
+        <th scope="col">Fecha Limite</th>
+        <th scope="col">Linea de captura</th>
+        <th scope="col"><i class="bi bi-sort-down-alt"></i></th>
+      </tr>
+    </thead>
 
-      <!-- <td>{{i}}</td> -->
-      <td>{{recuperar.lineaCaptura}}</td>
-      <td>{{recuperar.nombre}}</td>
-      <td>
-        <!-- [disabled]="profileForm.invalid" -->
-        <button (click)="imprimirPfd(i)" style="border: 0px; background-color: white;"><i class="bi bi-download"></i></button>
-      </td>
-    </tr>
-  </tbody>
+    <tbody>
+      <tr *ngFor="let recuperar of recuperar let i=index">
 
-</table>
+        <!-- <td>{{i}}</td> -->
+        <td>{{recuperar.fechaVigencia}}</td>
+        <td>{{recuperar.lineaCaptura}}</td>
+        <td>
+          <!-- [disabled]="profileForm.invalid" -->
+          <button (click)="imprimirPfd(i)" style="border: 0px; background-color: white;"><i
+              class="bi bi-download"></i></button>
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
 </div>
 
 

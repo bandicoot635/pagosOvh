@@ -14,8 +14,6 @@ export class FiltroPipe implements PipeTransform {
       return pagosList.slice(page, page + 10)
     }
 
-
-
     else if (buscar.match(valoresAceptados)) {
       const filtroNumero = pagosList.filter(pago => pago.id_pago.toString().includes(buscar))
       // console.log(filtroNumero);
@@ -24,7 +22,9 @@ export class FiltroPipe implements PipeTransform {
     }
 
     const filtroNombre = pagosList.filter(pago => pago.descripcion.includes(buscar.toUpperCase()));
-    // console.log(filtroNombre);
+
+    // document.write(filtroNombre)
+    // console.log(typeof filtroNombre);
     return filtroNombre.slice(page, page + 10);
   }
 

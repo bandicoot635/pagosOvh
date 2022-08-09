@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ApiService } from 'src/app/service/api.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ApiService } from 'src/app/service/api.service';
 import Swal from 'sweetalert2'
 
 @Component({
@@ -12,14 +11,6 @@ import Swal from 'sweetalert2'
 })
 export class FormulariosComponent implements OnInit {
 
-  private valoresOrdenPago = {
-    numero: 0,
-    fecha: "",
-    descripcion: "",
-    nombre: "",
-    curp: "",
-    plantel: 0
-  };
   private httpHeaders = new HttpHeaders({ 'content-type': 'application/json', });
   private URL: string = "http://localhost:3000"
   private fecha: any
@@ -27,76 +18,92 @@ export class FormulariosComponent implements OnInit {
   public forma!: FormGroup
   public condicion: boolean = false
   public alumnos: any = null;
-  private datos!: {
-    id_pago: number;
-    descripcion: string;
-  };
-
+  public algo: Array<Object> = [1, 2, 3, 4]
   profileForm = new FormGroup({
     termino: new FormControl(''),
     boolean: new FormControl(),
     boolean2: new FormControl(),
   })
+  public arrayDesdeService: Array<any> = [];
 
-  constructor(private activatedRoute: ActivatedRoute, private fb: FormBuilder, private http: HttpClient, private api: ApiService) {
+  constructor(private fb: FormBuilder, private http: HttpClient, private api: ApiService) { }
 
-    this.datos = {
-      id_pago: this.activatedRoute.snapshot.params['id_pago'],
-      descripcion: this.activatedRoute.snapshot.params['descripcion']
-    }
-
+  ngOnInit(): void {
+    this.arrayDesdeService = this.api.getArray();
+    // console.log(this.arrayDesdeService);
+    this.guardarLocalStorage()
+    this.leerLocalStorage()
     this.crearFormulario()
   }
 
-  ngOnInit(): void {
-
+  guardarLocalStorage() {
+    if(this.arrayDesdeService.length>0){
+      console.log('se guardo en localStorage');
+      
+      localStorage.setItem('pagosList', JSON.stringify(this.arrayDesdeService))
+    }
+   
   }
 
+  leerLocalStorage() {
+    if (!localStorage.getItem('pagosList')) { //aqui preguntamos si esto no existe
+      console.log('esta vacio');
+      return
+    }
+      console.log('se obtiene info de localStorage'); 
+      const pagosList: any[] = JSON.parse(localStorage.getItem('pagosList')!)
+      this.arrayDesdeService = pagosList
+    
+  }
 
   buscarAlumno(): any {
 
     let valores = {
       termino: this.profileForm.controls['termino'].value,
       boolean: this.profileForm.controls['boolean'].value,
-      // matricula: this.profileForm.controls['matricula'].value
+      boolean2: this.profileForm.controls['boolean2'].value,
     }
-    // console.log(valores)
 
 
-    this.http.post(`${this.URL}` + "/alumnos", valores, { headers: this.httpHeaders }).subscribe((resp: any) => {
-      this.alumnos = resp;
+    if (!valores.boolean && !valores.boolean2) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Tienes que hacer check a "buscar por"',
+        showConfirmButton: false,
+        timer: 1700
+      })
+    } else {
 
-      if (this.alumnos) {
-        // this.condicion = true
-        this.forma.patchValue({ nombre: resp.nombre })
-        this.forma.patchValue({ curp: resp.CURP })
+      this.http.post(`${this.URL}` + "/alumnos", valores, { headers: this.httpHeaders }).subscribe({
+        next: (res: any) => {
+          this.alumnos = res;
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Alumno encontrado',
-          showConfirmButton: false,
-          timer: 1500
-        })
-
-      } else {
-        // this.condicion = false;
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'No se han encontrado coincidencias!',
-          showConfirmButton: false,
-          timer: 1500
-        })
-      }
-
-    })
+          this.forma.patchValue({ nombre: res.nombre })
+          this.forma.patchValue({ curp: res.CURP })
+          this.forma.patchValue({ matricula: res.matricula })
+          Swal.fire({
+            icon: 'success',
+            title: 'Alumno encontrado',
+            showConfirmButton: false,
+            timer: 1700
+          })
+        }, error: (error: any) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error.error.error,
+            showConfirmButton: false,
+            timer: 1700
+          })
+        }
+      })
+    }
   }
 
   onChange(option: any, name: string) {
 
     let checkbox = document.getElementsByName("check") as NodeListOf<HTMLInputElement>
-    // console.log(checkbox)
 
     checkbox.forEach(valor => {
       if (option.target.id != 'boolean') {
@@ -108,10 +115,7 @@ export class FormulariosComponent implements OnInit {
 
     });
     // console.log( this.profileForm.value)
-    
   };
-
-
 
   crearFormulario() {
 
@@ -120,37 +124,61 @@ export class FormulariosComponent implements OnInit {
     this.fecha = this.date.getDate() + "/" + months[this.date.getMonth()] + "/" + this.date.getFullYear()
 
     this.forma = this.fb.group({
-      id_pago: [this.datos.id_pago, [Validators.required]],
-      descripcion: [this.datos.descripcion, [Validators.required]],
       fecha: [this.fecha, [Validators.required]],
       nombre: ['', [Validators.required]],
       curp: ['', [Validators.required]],
     })
   }
 
-  obtenerOvh(numero: string, fecha: string, descripcion: string, nombre: string, CURP: string): any {
-    this.valoresOrdenPago.numero = parseFloat(numero),
-    this.valoresOrdenPago.fecha = fecha,
-    this.valoresOrdenPago.descripcion = descripcion,
-    this.valoresOrdenPago.nombre = nombre;
-    this.valoresOrdenPago.curp = CURP;
 
-    this.http.post(`${this.URL}` + "/ovh/generar", this.valoresOrdenPago, { headers: this.httpHeaders }).subscribe((resp: any) => {
-      resp;
-      console.log(this.valoresOrdenPago);
-      
-      
-      if (resp != "") {
-        // console.log(resp);
-        window.open('https://ovh.veracruz.gob.mx/ovh/formatoReferenciado.do?lineaCaptura=' + resp)
+  obtenerOvh(nombre: string, fecha: string, CURP: string): any {
 
-      } else {
-        console.log("llego vacio");
+    if (!this.alumnos) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Primero agregue los datos del alumno',
+        showConfirmButton: false,
+        timer: 1700
+      })
+    } else {
+
+      let referencias: any[] = []
+      let cantidad: any = []
+
+      for (let i = 0; i < this.arrayDesdeService.length; i++) {
+        referencias[i] = this.arrayDesdeService[i].numero
+        cantidad[i] = this.arrayDesdeService[i].cantidad
       }
 
+      let valoresOrdenPago = {
+        numero: referencias.toString().trim(),
+        cantidad: cantidad.toString().trim(),
+        nombre: nombre.trim(),
+        fecha: fecha,
+        curp: CURP
+      };
+
+      this.http.post(`${this.URL}/ovh/generar`, valoresOrdenPago, { headers: this.httpHeaders }).subscribe({
+
+        next: (res: any) => {
+          window.open('https://ovh.veracruz.gob.mx/ovh/formatoReferenciado.do?lineaCaptura=' + res.trim())
+          Swal.fire(
+            'Listo',
+            'Orden de pago generada',
+            'success'
+          )
+        }, error: (error: any) => {
+          Swal.fire({
+            icon: 'error',
+            title: error.error.error,
+            showConfirmButton: false,
+            timer: 1700
+          });
+        }
+      })
+    }
 
 
-
-    })
   }
+
 }

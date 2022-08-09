@@ -6,15 +6,16 @@
 
     <form class="d-flex mb-3 card mx-auto mt-3" style="background-color:#c0c0c0fd" [formGroup]="profileForm"
         (ngSubmit)="buscarAlumno()">
-      
 
-        <h4 class="text-center my-1">Buscar alumno</h4>
+
+        <h4 class="text-center my-1">Búsqueda del alumno</h4>
+        <h5 class="text-center my-1">Búscar por:</h5>
 
         <div class="d-flex my-2 mx-auto">
 
             <div class="form-check form-check-inline">
                 <input type="checkbox" class="form-check-input" (change)="onChange($event, 'boolean')" name="check"
-                    formControlName="boolean" id="boolean">
+                    formControlName="boolean" id="boolean" >
                 <label type="checkbox" class="form-check-label" for="boolean">CURP</label>
             </div>
 
@@ -28,7 +29,8 @@
         </div>
 
         <div class="d-flex mb-2">
-            <input class="form-control ms-2" type="search" formControlName="termino" maxlength="18" placeholder="Datos alumno">
+            <input class="form-control ms-2" type="search" formControlName="termino" maxlength="18"
+                placeholder="Datos alumno">
             <button class="btn btn-danger ms-1 me-2" type="submit" style="color: aliceblue">Búscar</button>
         </div>
         <!-- <h1 *ngIf="condicion">NO SE ENCONTRARON RESULTADOS PARA {{buscar}}</h1> -->
@@ -55,50 +57,43 @@
     </ng-container> -->
 
     <!-- (ngSubmit)="buscarAlumno() -->
-    <form autocomplete="off" [formGroup]="forma" >
+    <form autocomplete="off" [formGroup]="forma">
+
         <fieldset disabled>
 
-            <div class="row g-2">
-                <div class="col ">
-                    <div class="form-floating">
-                        <input type="number" formControlName="id_pago" class="form-control" #numero>
-                        <label>Número</label>
-                    </div>
+            <div class="row g-3 mb-2 text-center">
+                
+                <div class="col">
+                    <label  class="form-label ">Fecha limite</label>
+                    <input type="text" class="form-control" formControlName="fecha" #fecha>
                 </div>
 
                 <div class="col">
-                    <div class="form-floating">
-                        <input type="text" formControlName="fecha" class="form-control" #fecha>
-                        <label>Fecha limite</label>
-                    </div>
+                    <label  class="form-label">CURP</label>
+                    <input type="text" class="form-control" formControlName="curp" #CURP>
                 </div>
-            </div>
 
-            <div class="col  my-3 ">
-                <div class="form-floating">
-                    <input type="text" formControlName="descripcion" class="form-control" #descripcion>
-                    <label>Descripción</label>
-                </div>
-            </div>
-
-            <div class="col  my-3">
-                <div class="form-floating">
-                    <input type="text" formControlName="nombre" class="form-control" #nombre>
-                    <label>Nombre completo</label>
-                </div>
-            </div>
-
-            <div class="col my-3">
-                <div class="form-floating">
-                    <input type="text" formControlName="curp" class="form-control" #CURP>
-                    <label>CURP</label>
+                <div class="col ">
+                    <label  class="form-label">Nombre</label>
+                    <input type="text" class="form-control" formControlName="nombre" #nombre>
                 </div>
             </div>
         </fieldset>
+        
+        <hr>
 
+        <ol class="list-group list-group" *ngFor="let item of arrayDesdeService">
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+              <div class="ms-2 me-auto">
+                <div class="fw-bold">{{item.numero}}</div>
+                {{item.descripcion}}
+              </div>
+              <span class="badge bg-danger rounded-pill">{{item.cantidad}}</span>
+            </li>
+          </ol>
 
         <button type="button" class="btn btn-danger col-12 mx-auto my-4"
-            (click)="obtenerOvh(numero.value, fecha.value, descripcion.value, nombre.value, CURP.value)">Obtener formato
+            (click)="obtenerOvh(nombre.value,  fecha.value, CURP.value)">Obtener formato
             OVH</button>
     </form>
 </div>

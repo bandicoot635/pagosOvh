@@ -32,7 +32,7 @@ import { RecuperarComponent } from './components/recuperar/recuperar.component';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [ApiService],
   bootstrap: [AppComponent]
