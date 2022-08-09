@@ -61,16 +61,30 @@ export class PagosComponent implements OnInit {
       msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice + 1].cantidad} )`);
     } else {
       this.pagos[indice].cantidad++;
-     
+
       let msg = alertify.message('Default message');
       msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice].cantidad} )`);
     }
   }
 
   delete(pago: any) {
-    this.pagos = this.pagos.filter((item: any) => item.numero !== pago.id_pago);
-    var msg = alertify.error('Default message');
-    msg.delay(1).setContent('Pago eliminado');
+
+    if (!this.pagos.length) {
+      let msg = alertify.error('Default message');
+      msg.delay(1).setContent('No hay nada para eliminar');
+    } else {
+      let x = this.pagos.length
+      this.pagos = this.pagos.filter((item: any) => item.numero !== pago.id_pago);
+      if (x !== this.pagos.length) {
+        let msg = alertify.error('Default message');
+        msg.delay(1).setContent('Pago eliminado');
+      } else {
+        let msg = alertify.error('Default message');
+        msg.delay(1).setContent('Este pago no ha sido agregado');
+      }
+
+
+    }
   }
 
   siguientePagina() {
