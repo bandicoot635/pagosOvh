@@ -3,6 +3,7 @@ import { ApiService } from 'src/app/service/api.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import Swal from 'sweetalert2'
+declare let alertify: any
 
 @Component({
   selector: 'app-formularios',
@@ -18,7 +19,6 @@ export class FormulariosComponent implements OnInit {
   public forma!: FormGroup
   public condicion: boolean = false
   public alumnos: any = null;
-  public algo: Array<Object> = [1, 2, 3, 4]
   profileForm = new FormGroup({
     termino: new FormControl(''),
     boolean: new FormControl(),
@@ -26,10 +26,12 @@ export class FormulariosComponent implements OnInit {
   })
   public arrayDesdeService: Array<any> = [];
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private api: ApiService) { }
+  constructor(private fb: FormBuilder, private http: HttpClient, private api: ApiService) {
+    this.profileForm.patchValue({ boolean2: true });
+  }
 
   ngOnInit(): void {
-    this.arrayDesdeService = this.api.getArray();
+    this.arrayDesdeService = this.api.getArray(); //RECIBE
     // console.log(this.arrayDesdeService);
     this.guardarLocalStorage()
     this.leerLocalStorage()
@@ -37,12 +39,12 @@ export class FormulariosComponent implements OnInit {
   }
 
   guardarLocalStorage() {
-    if(this.arrayDesdeService.length>0){
+    if (this.arrayDesdeService.length > 0) {
       console.log('se guardo en localStorage');
-      
+
       localStorage.setItem('pagosList', JSON.stringify(this.arrayDesdeService))
     }
-   
+
   }
 
   leerLocalStorage() {
@@ -50,10 +52,30 @@ export class FormulariosComponent implements OnInit {
       console.log('esta vacio');
       return
     }
-      console.log('se obtiene info de localStorage'); 
-      const pagosList: any[] = JSON.parse(localStorage.getItem('pagosList')!)
-      this.arrayDesdeService = pagosList
-    
+    console.log('se obtiene info de localStorage');
+    const pagosList: any[] = JSON.parse(localStorage.getItem('pagosList')!)
+    this.arrayDesdeService = pagosList
+
+  }
+
+  delete(pago: any) {
+    // console.log(pago);
+
+    this.arrayDesdeService = this.arrayDesdeService.filter((item: any) => item.numero !== pago.numero);
+
+    this.guardarLocalStorage()
+    let msg = alertify.error('Default message');
+    msg.delay(1).setContent('Pago eliminado');
+    console.log(this.arrayDesdeService);
+
+  }
+
+  sendArray(datos: any) { //ENVIA
+    this.api.setArray(datos);
+  }
+
+  enviarData() {
+    this.sendArray(this.arrayDesdeService);
   }
 
   buscarAlumno(): any {
@@ -89,6 +111,8 @@ export class FormulariosComponent implements OnInit {
             timer: 1700
           })
         }, error: (error: any) => {
+          this.forma.patchValue({ nombre: '' })
+          this.forma.patchValue({ curp: '' })
           Swal.fire({
             icon: 'error',
             title: 'Oops...',
@@ -161,12 +185,16 @@ export class FormulariosComponent implements OnInit {
       this.http.post(`${this.URL}/ovh/generar`, valoresOrdenPago, { headers: this.httpHeaders }).subscribe({
 
         next: (res: any) => {
-          window.open('https://ovh.veracruz.gob.mx/ovh/formatoReferenciado.do?lineaCaptura=' + res.trim())
-          Swal.fire(
-            'Listo',
-            'Orden de pago generada',
-            'success'
-          )
+          window.open(`https://ovh.veracruz.gob.mx/ovh/formatoReferenciado.do?lineaCaptura=${res.trim()}`)
+          Swal.fire({
+            icon: 'success',
+            title: 'Linea de captura generada',
+            confirmButtonText: 'Volver',
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.replace("http://localhost:4200/pagos");
+            }
+          })
         }, error: (error: any) => {
           Swal.fire({
             icon: 'error',

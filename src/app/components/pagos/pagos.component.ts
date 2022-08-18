@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/service/api.service';
+import { HttpClient } from '@angular/common/http';
 declare let alertify: any
 
 export interface Pago {
   numero: number,
   descripcion: string,
   cantidad: number
+  monto: number
 }
 
 @Component({
@@ -18,40 +20,52 @@ export class PagosComponent implements OnInit {
 
 
   public pagosList: any[] = [];
-  public page: number = 0;
   public buscar: string = "";
   public pagos: any = []
   public pagoV: Pago = {
     numero: 0,
     descripcion: "",
-    cantidad: 0
+    cantidad: 0,
+    monto: 0
   }
+  public arrayDesdeService: Array<any> = [];
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService, private http:HttpClient) { }
 
   ngOnInit(): void {
     this.api.getPagos().subscribe((resp: any) => {
       this.pagosList = resp;
     })
-    if (this.page == 0) {
-      let butonAtras = document.getElementById("butonAtras") as HTMLInputElement;
-      butonAtras.disabled = true;
+  
+    this.arrayDesdeService = this.api.getArray(); //recibe
+    this.pagos = this.arrayDesdeService
+    this.leerLocalStorage()
+  }
+  leerLocalStorage() {
+    if (!localStorage.getItem('pagosList')) { //aqui preguntamos si esto no existe
+      console.log('esta vacio');
+      return
     }
+    console.log('se obtiene info de localStorage');
+    const pagosList: any[] = JSON.parse(localStorage.getItem('pagosList')!)
+    this.arrayDesdeService = pagosList
+
   }
 
   buscarPago(buscar: string) {
-    this.page = 0;
     this.buscar = buscar;
   }
 
   add(pago: any) {
+    
     this.pagoV = {
       numero: pago.id_pago,
       descripcion: pago.descripcion.trim(),
-      cantidad: 1
+      cantidad: 1,
+      monto: 112
     }
 
-    //indice a veces devuelve -1 y por eso devuelve undefined
+    //Indice a veces devuelve -1 y por eso devuelve undefined
     let indice = this.pagos.findIndex((p: any) => p.numero === this.pagoV.numero);
 
     if (indice == -1) {
@@ -59,11 +73,16 @@ export class PagosComponent implements OnInit {
 
       let msg = alertify.message('Default message');
       msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice + 1].cantidad} )`);
+      
     } else {
+
+      let msg = alertify.error('Default message');
+      msg.delay(2).setContent(`Solo se puede un pago`);
+      /* ESTAS LINEAS DE CODIGO SIRVEN PARA AGREGAR MAS CATNTIDAD DE UN PAGO
       this.pagos[indice].cantidad++;
 
       let msg = alertify.message('Default message');
-      msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice].cantidad} )`);
+      msg.delay(2).setContent(`Pago agregado (Cantidad: ${this.pagos[indice].cantidad} )`);*/
     }
   }
 
@@ -82,38 +101,24 @@ export class PagosComponent implements OnInit {
         let msg = alertify.error('Default message');
         msg.delay(1).setContent('Este pago no ha sido agregado');
       }
-
-
     }
   }
 
-  siguientePagina() {
-    let butonAtras = document.getElementById("butonAtras") as HTMLInputElement;
-
-    if (this.page == 0) {
-      butonAtras.disabled = true;
-    } else {
-      butonAtras.disabled = false;
-    }
-    this.page += 10;
-    console.log(this.page);
+  paginar(desde:any){
+    // console.log(desde);
+    this.http.get(`http://localhost:3000/pagos?desde=${desde}`).subscribe((resp:any) => {
+       this.pagosList = resp
+      // console.log(resp);
+    })
+   
+    
   }
 
-  atrasPagina() {
-    this.page -= 10
-    console.log(this.page);
-
-    let butonAtras = document.getElementById("butonAtras") as HTMLInputElement;
-    if (this.page <= 0) {
-      butonAtras.disabled = true;
-    }
-  }
-
-  sendArray(datos: any) {
+  sendArray(datos: any) { // cuando se ejecuta el metodo 'enviarData' se manda la data al service
     this.api.setArray(datos);
   }
 
-  enviarData() {
+  enviarData() { //Cuando le doy click al icono de la carpeta se ejecuta este metodo
     this.sendArray(this.pagos);
   }
 

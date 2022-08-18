@@ -52,7 +52,7 @@ const generarPorPrimeraVez = async (req, res) => {
     
                         const query = 'INSERT INTO "lineasCaptura"(plantel, estatus, "lineaCaptura", id_pago, monto, "fechaVigencia", id_alumno, cantidad) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)'
                         const response1 = pool.query(query, [10, "vigente", lineaCaptura, numero, monto, fecha, id_alumno, cantidad]);
-    
+   
                         res.json(lineaCaptura); //Se manda como respuesta la linea de captura
                         
                     } catch (error) {
@@ -99,7 +99,7 @@ const consultarLineCaptura = async (req, res) => {
                 })
             } else {
                 try {
-                    const query = 'SELECT * FROM "lineasCaptura" WHERE id_alumno = $1'
+                    const query = 'SELECT * FROM "lineasCaptura" WHERE id_alumno = $1 ORDER BY "fechaVigencia"'
                     const response2 = await pool.query(query, [response.rows[0].id_alumno]);
 
                     if (!response2.rows[0]) {

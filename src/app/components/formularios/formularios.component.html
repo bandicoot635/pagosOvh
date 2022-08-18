@@ -14,7 +14,7 @@
         <div class="d-flex my-2 mx-auto">
 
             <div class="form-check form-check-inline">
-                <input type="checkbox" class="form-check-input" (change)="onChange($event, 'boolean')" name="check"
+                <input type="checkbox" class="form-check-input"  (change)="onChange($event, 'boolean')" name="check"
                     formControlName="boolean" id="boolean" >
                 <label type="checkbox" class="form-check-label" for="boolean">CURP</label>
             </div>
@@ -70,12 +70,12 @@
 
                 <div class="col">
                     <label  class="form-label">CURP</label>
-                    <input type="text" class="form-control" formControlName="curp" #CURP>
+                    <input type="text" class="form-control text-center" formControlName="curp" #CURP>
                 </div>
 
                 <div class="col ">
                     <label  class="form-label">Nombre</label>
-                    <input type="text" class="form-control" formControlName="nombre" #nombre>
+                    <input type="text" class="form-control text-center" formControlName="nombre" #nombre>
                 </div>
             </div>
         </fieldset>
@@ -86,8 +86,10 @@
             <li class="list-group-item d-flex justify-content-between align-items-start">
               <div class="ms-2 me-auto">
                 <div class="fw-bold">{{item.numero}}</div>
-                {{item.descripcion}}
+                {{item.descripcion}} <button style="border: 0px; background-color: transparent;" (click)="delete(item); enviarData()"><i
+                    class="bi bi-trash-fill"></i></button>
               </div>
+            
               <span class="badge bg-danger rounded-pill">{{item.cantidad}}</span>
             </li>
           </ol>
